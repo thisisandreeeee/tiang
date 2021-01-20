@@ -25,4 +25,4 @@ ganache:
 	ganache-cli
 
 clean:
-	rm $(shell pwd)/app/build/*
+	rm -rf $(shell pwd)/app/build/*
