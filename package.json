@@ -21,6 +21,8 @@
   },
   "homepage": "https://github.com/thisisandreeeee/tiang#readme",
   "dependencies": {
-    "@openzeppelin/contracts": "^2.4.0"
+    "@openzeppelin/contracts": "^2.4.0",
+    "ganache-cli": "^6.12.2",
+    "truffle": "^5.1.62"
   }
 }
