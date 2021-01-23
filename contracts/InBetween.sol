@@ -6,11 +6,10 @@ import "./Pot.sol";
 
 contract InBetween is Ownable {
     Pot pot;
-    uint256 ante;
+    uint256 ante = 100 wei; // TODO: make this configurable
 
-    constructor(uint256 _anteInWei) {
+    constructor() {
         pot = new Pot();
-        ante = _anteInWei;
     }
 
     function joinGame() external payable {
