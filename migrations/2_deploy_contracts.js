@@ -1,5 +1,5 @@
-const Game = artifacts.require("Game");
+const InBetween = artifacts.require("InBetween");
 
 module.exports = function (deployer) {
-  deployer.deploy(Game);
+  deployer.deploy(InBetween);
 };
