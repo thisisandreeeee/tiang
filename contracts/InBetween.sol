@@ -2,21 +2,18 @@
 pragma solidity ^0.7.6;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./Pot.sol";
 
 contract InBetween is Ownable {
-    Pot pot;
     uint256 ante = 100 wei; // TODO: make this configurable
 
-    constructor() {
-        pot = new Pot();
-    }
+    mapping(address => uint256) private _bets;
 
     function joinGame() external payable {
-        require(pot.depositsOf(msg.sender) == 0, "Player is already in game");
+        require(_bets[msg.sender] == 0, "Player is already in game");
         require(msg.value >= ante, "Sent amount less than ante");
 
-        pot.deposit(msg.sender);
+        _bets[msg.sender] += msg.value;
+        // TODO: refund excess ante
 
         // give cards
 
@@ -25,8 +22,8 @@ contract InBetween is Ownable {
     }
 
     function viewStake() external view returns (uint256) {
-        uint256 stake = pot.depositsOf(msg.sender);
-        require(stake >= 0, "Player is not in game");
+        uint256 stake = _bets[msg.sender];
+        require(stake > 0, "Player is not in game");
         return stake;
     }
 }
