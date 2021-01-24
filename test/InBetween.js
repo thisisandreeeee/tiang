@@ -11,17 +11,17 @@ describe('InBetween', function () {
   it("reverts when joining with insufficient funds", async function () {
     const [owner, player] = accounts;
     inBetween = await InBetween.new({ from: owner });
-    await expectRevert(inBetween.joinGame({ from: player, value: 5 }), 'Sent amount less than ante');
+    await expectRevert(inBetween.joinGame({ from: player, value: 5 }), 'sent amount less than ante');
   });
 
   it("reverts when player is already in game", async function () {
     const [owner, player] = accounts;
     inBetween = await InBetween.new({ from: owner });
     await inBetween.joinGame({ from: player, value: 100 });
-    await expectRevert(inBetween.joinGame({ from: player, value: 100 }), 'Player is already in game');
+    await expectRevert(inBetween.joinGame({ from: player, value: 100 }), 'player is already in game');
   });
 
-  it("shows the stake that a player has in the pot", async function () {
+  it("returns the correct stake when joining a game", async function () {
     const [owner, player] = accounts;
     inBetween = await InBetween.new({ from: owner });
     await inBetween.joinGame({ from: player, value: 100 });
