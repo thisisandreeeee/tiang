@@ -7,6 +7,7 @@ import "./Queue.sol";
 // TODO: replace all arithmetic with safe math
 
 contract InBetween is Ownable {
+    using Queue for Queue.Data;
     uint256 private ante = 100 wei; // TODO: make this configurable
     uint256 private pot;
     mapping(address => uint256) private balances;
@@ -22,7 +23,7 @@ contract InBetween is Ownable {
 
         drawOpeningCards();
 
-        Queue.push(queue, msg.sender);
+        queue.push(msg.sender);
     }
 
     function viewStake() external view returns (uint256) {
@@ -32,7 +33,7 @@ contract InBetween is Ownable {
     }
 
     function bet() external payable {
-        require(Queue.peek(queue) == msg.sender, "player is not next in queue");
+        require(queue.peek() == msg.sender, "player is not next in queue");
         require(msg.value >= 2 * pot, "sent amount less than half of pot");
         drawFinalCard();
 
