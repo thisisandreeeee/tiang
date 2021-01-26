@@ -3,6 +3,7 @@ const { expectRevert } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 
 const InBetween = contract.fromArtifact("InBetween");
+const Queue = contract.fromArtifact("Queue");
 
 describe('InBetween', function () {
   let owner, player;
@@ -10,6 +11,9 @@ describe('InBetween', function () {
 
   beforeEach(async function () {
     [owner, player] = accounts;
+    queue = await Queue.new();
+    await InBetween.detectNetwork();
+    await InBetween.link("Queue", queue.address);
     inBetween = await InBetween.new({ from: owner });
   });
 
