@@ -11,9 +11,6 @@ describe('InBetween', function () {
 
   beforeEach(async function () {
     [owner, player] = accounts;
-    queue = await Queue.new();
-    await InBetween.detectNetwork();
-    await InBetween.link("Queue", queue.address);
     inBetween = await InBetween.new({ from: owner });
   });
 

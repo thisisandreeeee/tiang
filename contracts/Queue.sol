@@ -10,18 +10,18 @@ library Queue {
         mapping(address => uint128) positions;
     }
 
-    function push(Data storage _queue, address _address) public {
+    function push(Data storage _queue, address _address) internal {
         _queue.addresses[_queue.end++] = _address;
         _queue.positions[_address] = _queue.end;
     }
 
-    function pop(Data storage _queue) public returns (address) {
+    function pop(Data storage _queue) internal returns (address) {
         address _address = _queue.addresses[_queue.start];
         _queue.addresses[_queue.start++] = address(0);
         return _address;
     }
 
-    function peek(Data storage _queue) public view returns (address) {
+    function peek(Data storage _queue) internal view returns (address) {
         return _queue.addresses[_queue.start];
     }
 }
