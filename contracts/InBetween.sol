@@ -2,24 +2,27 @@
 pragma solidity ^0.7.6;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./Queue.sol";
-
-// TODO: replace all arithmetic with safe math
 
 contract InBetween is Ownable {
     using Queue for Queue.Data;
+    using SafeMath for uint256;
+
     uint256 private ante = 100 wei; // TODO: make this configurable
     uint256 private pot;
+
     mapping(address => uint256) private balances;
     mapping(address => uint8[3]) private hands;
+
     Queue.Data private queue;
 
     function joinGame() external payable {
         require(balances[msg.sender] == 0, "player is already in game");
         require(msg.value >= ante, "sent amount less than ante");
 
-        balances[msg.sender] += msg.value;
-        pot += msg.value;
+        balances[msg.sender] = balances[msg.sender].add(msg.value);
+        pot = pot.add(msg.value);
 
         drawOpeningCards();
 
@@ -69,8 +72,10 @@ contract InBetween is Ownable {
     }
 
     function randomNumber() private view returns (uint8) {
+        // not truly random, need to use oracle as RNG
         uint256 rand = uint256(keccak256(abi.encodePacked(block.timestamp)));
-        return uint8(rand) % 13;
+        rand = rand**2;
+        return uint8(rand.mod(13));
     }
 
     function lowerUpperCards() private view returns (uint8, uint8) {
