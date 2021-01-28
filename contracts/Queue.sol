@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.7.6;
+pragma solidity 0.7.6;
 
 library Queue {
     // https://ethereum.stackexchange.com/questions/63708/how-to-properly-delete-the-first-element-in-an-array
