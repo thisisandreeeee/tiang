@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.7.6;
+pragma abicoder v2;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
@@ -23,6 +24,7 @@ contract InBetween is Ownable {
         require(balances[msg.sender] == 0, "player is already in game");
         require(msg.value >= ante, "sent amount less than ante");
 
+        // TODO: refund excess ante
         balances[msg.sender] = balances[msg.sender].add(msg.value);
         pot = pot.add(msg.value);
 
@@ -35,6 +37,14 @@ contract InBetween is Ownable {
         uint256 stake = balances[msg.sender];
         require(stake > 0, "player must be in game to view stake");
         return stake;
+    }
+
+    function viewHand() external view returns (Cards.Data memory) {
+        require(
+            balances[msg.sender] > 0,
+            "player must be in game to view hand"
+        );
+        return hands[msg.sender];
     }
 
     function bet() external payable {
@@ -58,6 +68,7 @@ contract InBetween is Ownable {
         } else {
             revert("unsupported card result");
         }
+        // if game not over, add player to back of queue again
     }
 
     function randomNumber() private view returns (uint8) {

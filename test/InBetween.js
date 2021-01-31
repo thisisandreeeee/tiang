@@ -29,10 +29,11 @@ describe('InBetween', function () {
     expect(stake.toNumber()).to.equal(100);
   });
 
-  xit("excess ante is refunded to the player", async function () { });
-
-  xit("player gets two cards when joining game", async function () { });
-
-  xit("revert when drawing opening cards again", async function () { });
-  xit("revert when drawing final card without opening cards", async function () { });
+  it("player gets two cards when joining game", async function () {
+    await inBetween.joinGame({ from: player, value: 100 });
+    let hand = await inBetween.viewHand({ from: player });
+    expect(hand.first.initialised).to.be.true;
+    expect(hand.second.initialised).to.be.true;
+    expect(hand.third.initialised).to.be.false;
+  });
 });
