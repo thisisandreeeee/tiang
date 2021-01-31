@@ -28,7 +28,10 @@ contract InBetween is Ownable {
         balances[msg.sender] = balances[msg.sender].add(msg.value);
         pot = pot.add(msg.value);
 
-        hands[msg.sender].setOpeningCards(randomNumber(), randomNumber());
+        hands[msg.sender] = hands[msg.sender].setOpeningCards(
+            randomNumber(),
+            randomNumber()
+        );
 
         queue.push(msg.sender);
     }
@@ -52,7 +55,7 @@ contract InBetween is Ownable {
             hands[msg.sender].hasOpeningCards(),
             "player does not have opening cards"
         );
-        hands[msg.sender].setFinalCard(randomNumber());
+        hands[msg.sender] = hands[msg.sender].setFinalCard(randomNumber());
 
         // TODO: implement payment without re-entrancy risk
         // maybe use an escrow here?
