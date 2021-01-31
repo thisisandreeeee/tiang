@@ -35,15 +35,12 @@ contract InBetween is Ownable {
 
     function viewStake() external view returns (uint256) {
         uint256 stake = balances[msg.sender];
-        require(stake > 0, "player must be in game to view stake");
+        require(stake > 0, "player not in game");
         return stake;
     }
 
     function viewHand() external view returns (Cards.Data memory) {
-        require(
-            balances[msg.sender] > 0,
-            "player must be in game to view hand"
-        );
+        require(balances[msg.sender] > 0, "player not in game");
         return hands[msg.sender];
     }
 

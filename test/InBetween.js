@@ -23,6 +23,11 @@ describe('InBetween', function () {
     await expectRevert(inBetween.joinGame({ from: player, value: 100 }), 'player is already in game');
   });
 
+  it("reverts if viewing stake or hand when not in game", async function () {
+    await expectRevert(inBetween.viewStake({ from: player }), "player not in game");
+    await expectRevert(inBetween.viewHand({ from: player }), "player not in game");
+  });
+
   it("ante deposited when joining game is correct", async function () {
     await inBetween.joinGame({ from: player, value: 100 });
     let stake = await inBetween.viewStake({ from: player });
