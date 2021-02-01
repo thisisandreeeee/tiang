@@ -8,7 +8,6 @@ import "./Queue.sol";
 import "./Cards.sol";
 
 contract InBetween is Ownable {
-    using Queue for Queue.Data;
     using Cards for Cards.Data;
     using SafeMath for uint256;
 
@@ -18,7 +17,11 @@ contract InBetween is Ownable {
     uint256 private pot;
     mapping(address => uint256) private balances;
     mapping(address => Cards.Data) private hands;
-    Queue.Data private queue;
+    Queue private queue;
+
+    constructor() {
+        queue = new Queue();
+    }
 
     function joinGame() external payable {
         require(balances[msg.sender] == 0, "player is already in game");
@@ -48,7 +51,7 @@ contract InBetween is Ownable {
     }
 
     function bet() external payable {
-        require(queue.peek() == msg.sender, "player is not next in queue");
+        require(queue.head() == msg.sender, "player is not next in queue");
         require(msg.value >= 2 * pot, "sent amount less than half of pot");
 
         require(
