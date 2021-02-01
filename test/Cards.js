@@ -1,14 +1,15 @@
-const { accounts, contract } = require('@openzeppelin/test-environment');
-const { BN, expectRevert } = require('@openzeppelin/test-helpers');
+const { contract } = require('@openzeppelin/test-environment');
+const { expectRevert } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 
 const Cards = contract.fromArtifact("CardsMock");
 
 describe('Cards', function () {
     let cards;
+    let cardsInstance;
 
     beforeEach(async function () {
-        cardsInstance = await Cards.new({ from: accounts[0] });
+        cardsInstance = await Cards.new();
         cards = await cardsInstance.newCards();
     });
 
@@ -20,12 +21,12 @@ describe('Cards', function () {
         cards = await cardsInstance.setOpeningCards(cards, 1, 10);
         expect(await cardsInstance.hasOpeningCards(cards)).to.be.true;
         expect(await cardsInstance.hasFinalCard(cards)).to.be.false;
-        expect(cards.first.value).to.be.bignumber.equal(new BN(1));
-        expect(cards.second.value).to.be.bignumber.equal(new BN(10));
+        expect(cards.first.value).to.be.bignumber.equal("1");
+        expect(cards.second.value).to.be.bignumber.equal("10");
 
         cards = await cardsInstance.setFinalCard(cards, 5);
         expect(await cardsInstance.hasFinalCard(cards)).to.be.true;
-        expect(cards.third.value).to.be.bignumber.equal(new BN(5));
+        expect(cards.third.value).to.be.bignumber.equal("5");
     });
 
     it("reverts when drawing cards twice", async function () {
