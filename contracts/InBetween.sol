@@ -11,27 +11,31 @@ contract InBetween is Ownable {
     using Cards for Cards.Data;
     using SafeMath for uint256;
 
-    // TODO: configurations
-    uint256 private ante = 100 wei;
+    uint256 private ante;
 
     uint256 private pot;
-    mapping(address => uint256) private balances;
-    mapping(address => Cards.Data) private hands;
+    struct Player {
+        uint256 balance;
+        Cards.Data cards;
+    }
+    mapping(address => Player) private players;
     Queue private queue;
 
     constructor() {
+        ante = 100 wei;
         queue = new Queue();
     }
 
     function joinGame() external payable {
-        require(balances[msg.sender] == 0, "player is already in game");
+        uint256 balance = players[msg.sender].balance;
+        require(balance == 0, "player is already in game");
         require(msg.value >= ante, "sent amount less than ante");
 
         // TODO: refund excess ante
-        balances[msg.sender] = balances[msg.sender].add(msg.value);
+        players[msg.sender].balance = balance.add(msg.value);
         pot = pot.add(msg.value);
 
-        hands[msg.sender] = hands[msg.sender].setOpeningCards(
+        players[msg.sender].cards = players[msg.sender].cards.setOpeningCards(
             randomNumber(),
             randomNumber()
         );
@@ -40,14 +44,14 @@ contract InBetween is Ownable {
     }
 
     function viewStake() external view returns (uint256) {
-        uint256 stake = balances[msg.sender];
+        uint256 stake = players[msg.sender].balance;
         require(stake > 0, "player not in game");
         return stake;
     }
 
-    function viewHand() external view returns (Cards.Data memory) {
-        require(balances[msg.sender] > 0, "player not in game");
-        return hands[msg.sender];
+    function viewCards() external view returns (Cards.Data memory) {
+        require(players[msg.sender].balance > 0, "player not in game");
+        return players[msg.sender].cards;
     }
 
     function bet() external payable {
