@@ -4,10 +4,12 @@ pragma abicoder v2;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/payment/PullPayment.sol";
+
 import "./Queue.sol";
 import "./Cards.sol";
 
-contract InBetween is Ownable {
+contract InBetween is Ownable, PullPayment {
     using Cards for Cards.Data;
     using SafeMath for uint256;
 
@@ -55,27 +57,41 @@ contract InBetween is Ownable {
     }
 
     function bet() external payable {
+        // TODO: implement queue time limit
         require(queue.head() == msg.sender, "player is not next in queue");
-        require(msg.value >= 2 * pot, "sent amount less than half of pot");
+
+        // if the final card equals any opening card, the player will need to pay double the bet
+        // hence, we require players to send double their bet as collateral which is returned upon a win
+        uint256 betAmount = msg.value.div(2);
+        require(betAmount >= ante, "bet must not be less than ante");
+        require(betAmount <= pot, "bet must not be more than pot");
 
         require(
-            hands[msg.sender].hasOpeningCards(),
+            players[msg.sender].cards.hasOpeningCards(),
             "player does not have opening cards"
         );
-        hands[msg.sender] = hands[msg.sender].setFinalCard(randomNumber());
+        players[msg.sender].cards = players[msg.sender].cards.setFinalCard(
+            randomNumber()
+        );
+        queue.pop();
 
-        // TODO: implement payment without re-entrancy risk
-        // maybe use an escrow here?
-        if (hands[msg.sender].result() == Cards.Result.Inside) {
-            // player wins the bet
-        } else if (hands[msg.sender].result() == Cards.Result.Equal) {
-            // player pays double the bet
-        } else if (hands[msg.sender].result() == Cards.Result.Outside) {
-            // player loses the bet
+        Cards.Data memory cards = players[msg.sender].cards;
+        if (cards.result() == Cards.Result.Inside) {
+            // player wins their collateral and the bet amount
+            _asyncTransfer(msg.sender, msg.value.add(betAmount));
+            pot -= betAmount;
+        } else if (cards.result() == Cards.Result.Equal) {
+            // player loses their entire collateral
+            pot += msg.value;
+        } else if (cards.result() == Cards.Result.Outside) {
+            // player loses only the bet amount
+            _asyncTransfer(msg.sender, msg.value.sub(betAmount));
+            pot += betAmount;
         } else {
             revert("unsupported card result");
         }
-        // if game not over, add player to back of queue again
+        // TODO: check if game is over before adding player to queue
+        queue.push(msg.sender);
     }
 
     function randomNumber() private view returns (uint8) {
