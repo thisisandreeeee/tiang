@@ -15,13 +15,13 @@ contract InBetween is Ownable, PullPayment {
 
     uint256 private ante;
 
-    uint256 private pot;
+    uint256 public pot;
     struct Player {
         uint256 balance;
         Cards.Data cards;
     }
     mapping(address => Player) private players;
-    Queue private queue;
+    Queue internal queue;
 
     constructor() {
         ante = 100 wei;
@@ -38,8 +38,8 @@ contract InBetween is Ownable, PullPayment {
         pot = pot.add(msg.value);
 
         players[msg.sender].cards = players[msg.sender].cards.setOpeningCards(
-            randomNumber(),
-            randomNumber()
+            randomNumber(0),
+            randomNumber(1)
         );
 
         queue.push(msg.sender);
@@ -56,6 +56,11 @@ contract InBetween is Ownable, PullPayment {
         return players[msg.sender].cards;
     }
 
+    function nextPlayer() external view returns (address) {
+        if (queue.length() == 0) return address(0);
+        return queue.head();
+    }
+
     function bet() external payable {
         // TODO: implement queue time limit
         require(queue.head() == msg.sender, "player is not next in queue");
@@ -63,7 +68,9 @@ contract InBetween is Ownable, PullPayment {
         // if the final card equals any opening card, the player will need to pay double the bet
         // hence, we require players to send double their bet as collateral which is returned upon a win
         uint256 betAmount = msg.value.div(2);
-        require(betAmount >= ante, "bet must not be less than ante");
+        if (pot >= ante) {
+            require(betAmount >= ante, "bet must not be less than ante");
+        }
         require(betAmount <= pot, "bet must not be more than pot");
 
         require(
@@ -71,33 +78,45 @@ contract InBetween is Ownable, PullPayment {
             "player does not have opening cards"
         );
         players[msg.sender].cards = players[msg.sender].cards.setFinalCard(
-            randomNumber()
+            randomNumber(2)
         );
         queue.pop();
 
-        Cards.Data memory cards = players[msg.sender].cards;
-        if (cards.result() == Cards.Result.Inside) {
-            // player wins their collateral and the bet amount
-            _asyncTransfer(msg.sender, msg.value.add(betAmount));
-            pot -= betAmount;
-        } else if (cards.result() == Cards.Result.Equal) {
-            // player loses their entire collateral
-            pot += msg.value;
-        } else if (cards.result() == Cards.Result.Outside) {
-            // player loses only the bet amount
-            _asyncTransfer(msg.sender, msg.value.sub(betAmount));
-            pot += betAmount;
-        } else {
-            revert("unsupported card result");
-        }
+        payout(players[msg.sender].cards.result(), msg.value, betAmount);
         // TODO: check if game is over before adding player to queue
         queue.push(msg.sender);
     }
 
-    function randomNumber() private view returns (uint8) {
+    function randomNumber(uint256 cursor)
+        internal
+        view
+        virtual
+        returns (uint8)
+    {
         // not truly random, need to use oracle as RNG
         uint256 rand = uint256(keccak256(abi.encodePacked(block.timestamp)));
-        rand = rand**2;
+        rand = rand.sub(cursor); // hack to allow mocking the RNG in tests
         return uint8(rand.mod(13));
+    }
+
+    function payout(
+        Cards.Result result,
+        uint256 collateral,
+        uint256 betAmount
+    ) private {
+        if (result == Cards.Result.Inside) {
+            // player wins their collateral and the bet amount
+            _asyncTransfer(msg.sender, collateral.add(betAmount));
+            pot -= betAmount;
+        } else if (result == Cards.Result.Equal) {
+            // player loses their entire collateral
+            pot += collateral;
+        } else if (result == Cards.Result.Outside) {
+            // player loses only the bet amount
+            _asyncTransfer(msg.sender, collateral.sub(betAmount));
+            pot += betAmount;
+        } else {
+            revert("unsupported card result");
+        }
     }
 }
