@@ -9,7 +9,7 @@ describe('InBetween', function () {
     let owner, p1, p2, p3;
     let inBetween;
 
-    describe('Join', function () {
+    describe('joinGame', function () {
         beforeEach(async function () {
             [owner, p1, p2] = accounts;
             inBetween = await InBetween.new({ from: owner });
@@ -53,7 +53,7 @@ describe('InBetween', function () {
         });
     });
 
-    describe('Bet', function () {
+    describe('bet', function () {
         const ante = 100;
         beforeEach(async function () {
             [owner, p1, p2, p3] = accounts;
@@ -94,7 +94,7 @@ describe('InBetween', function () {
 
             await inBetween.bet({ from: p3, value: ante * 2 });
             expect(await inBetween.pot()).to.be.bignumber.equal("200");
-            // expect(await inBetween.payments(p1)).to.be.bignumber.equal("300");
+            expect(await inBetween.payments(p3)).to.be.bignumber.equal("300");
         });
     });
 });
