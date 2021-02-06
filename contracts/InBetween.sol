@@ -67,7 +67,8 @@ contract InBetween is Ownable, PullPayment {
 
         // if the final card equals any opening card, the player will need to pay double the bet
         // hence, we require players to send double their bet as collateral which is returned upon a win
-        uint256 betAmount = msg.value.div(2);
+        uint256 collateral = msg.value;
+        uint256 betAmount = collateral.div(2);
         if (pot >= ante) {
             require(betAmount >= ante, "bet must not be less than ante");
         }
@@ -82,28 +83,7 @@ contract InBetween is Ownable, PullPayment {
         );
         queue.pop();
 
-        payout(players[msg.sender].cards.result(), msg.value, betAmount);
-        // TODO: check if game is over before adding player to queue
-        queue.push(msg.sender);
-    }
-
-    function randomNumber(uint256 cursor)
-        internal
-        view
-        virtual
-        returns (uint8)
-    {
-        // not truly random, need to use oracle as RNG
-        uint256 rand = uint256(keccak256(abi.encodePacked(block.timestamp)));
-        rand = rand.sub(cursor); // hack to allow mocking the RNG in tests
-        return uint8(rand.mod(13));
-    }
-
-    function payout(
-        Cards.Result result,
-        uint256 collateral,
-        uint256 betAmount
-    ) private {
+        Cards.Result result = players[msg.sender].cards.result();
         if (result == Cards.Result.Inside) {
             // player wins their collateral and the bet amount
             _asyncTransfer(msg.sender, collateral.add(betAmount));
@@ -118,5 +98,20 @@ contract InBetween is Ownable, PullPayment {
         } else {
             revert("unsupported card result");
         }
+
+        // TODO: check if game is over before adding player to queue
+        queue.push(msg.sender);
+    }
+
+    function randomNumber(uint256 cursor)
+        internal
+        view
+        virtual
+        returns (uint8)
+    {
+        // not truly random, need to use oracle as RNG
+        uint256 rand = uint256(keccak256(abi.encodePacked(block.timestamp)));
+        rand = rand.sub(cursor); // hack to allow mocking the RNG in tests
+        return uint8(rand.mod(13));
     }
 }
