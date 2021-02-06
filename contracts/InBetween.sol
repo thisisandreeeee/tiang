@@ -100,7 +100,14 @@ contract InBetween is Ownable, PullPayment {
         }
 
         // TODO: check if game is over before adding player to queue
+        // maybe end game if pot is too small?
         queue.push(msg.sender);
+    }
+
+    function withdraw() external {
+        // TODO: test this using balance.tracker
+        require(payments(msg.sender) > 0, "no funds to withdraw");
+        return withdrawPayments(msg.sender);
     }
 
     function randomNumber(uint256 cursor)
