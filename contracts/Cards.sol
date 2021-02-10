@@ -4,7 +4,7 @@ pragma solidity 0.7.6;
 import "@openzeppelin/contracts/math/Math.sol";
 
 library Cards {
-    enum Result {Inside, Outside, Equal}
+    enum Result {Unknown, Inside, Outside, Equal}
     struct Card {
         uint8 value;
         bool initialised;
@@ -49,8 +49,9 @@ library Cards {
     }
 
     function result(Data memory _cards) internal pure returns (Result) {
-        require(hasOpeningCards(_cards), "opening cards not set");
-        require(hasFinalCard(_cards), "final card not set");
+        if (!hasOpeningCards(_cards) || !hasFinalCard(_cards)) {
+            return Result.Unknown;
+        }
 
         uint8 lower = uint8(Math.min(_cards.first.value, _cards.second.value));
         uint8 upper = uint8(Math.max(_cards.first.value, _cards.second.value));
