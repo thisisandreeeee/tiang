@@ -54,6 +54,11 @@ contract InBetween is Ownable, PullPayment {
         return queue.head();
     }
 
+    // ONLY FOR TESTING PURPOSES
+    function reset() external {
+        delete players[msg.sender];
+    }
+
     function bet() external payable {
         // TODO: implement queue time limit
         require(queue.head() == msg.sender, "player is not next in queue");
@@ -111,7 +116,7 @@ contract InBetween is Ownable, PullPayment {
     {
         // not truly random, need to use oracle as RNG
         uint256 rand = uint256(keccak256(abi.encodePacked(block.timestamp)));
-        rand = rand.sub(cursor); // hack to allow mocking the RNG in tests
+        rand = rand.add(rand.mod(1000).mul(cursor)); // hack to allow mocking the RNG in tests
         return uint8(rand.mod(13));
     }
 }
