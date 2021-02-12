@@ -53,8 +53,12 @@ contract InBetween is Ownable, Cashier {
     }
 
     // ONLY FOR TESTING PURPOSES
-    function reset() external {
+    function reset(bool hard) external {
         delete cards[msg.sender];
+        if (hard) {
+            withdraw(msg.sender);
+            pot = 0;
+        }
     }
 
     function bet(uint256 _betAmount) external {
@@ -93,6 +97,8 @@ contract InBetween is Ownable, Cashier {
 
         // TODO: check if game is over before adding player to queue
         // maybe end game if pot is too small?
+
+        // TODO: reset hand when rejoining game
         queue.push(msg.sender);
     }
 

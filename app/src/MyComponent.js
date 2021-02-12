@@ -54,7 +54,7 @@ export default ({ drizzle, drizzleState }) => {
               drizzle={drizzle}
               drizzleState={drizzleState}
               contract="InBetween"
-              method="payments"
+              method="balanceOf"
               methodArgs={[drizzleState.accounts[0]]}
             />
           </li>
@@ -77,36 +77,49 @@ export default ({ drizzle, drizzleState }) => {
             />
           </li>
         </ul>
-        <div>
-          <strong>Join game: </strong>
-          <ContractForm
-            drizzle={drizzle}
-            contract="InBetween"
-            method="joinGame"
-            sendArgs={{ from: drizzleState.accounts[0], value: 100, gas: 6000000 }}
-          />
-          <strong>Bet: </strong>
-          <ContractForm
-            drizzle={drizzle}
-            contract="InBetween"
-            method="bet"
-            sendArgs={{ from: drizzleState.accounts[0], value: 200, gas: 6000000 }}
-          />
-          <strong>Withdraw: </strong>
-          <ContractForm
-            drizzle={drizzle}
-            contract="InBetween"
-            method="withdraw"
-            sendArgs={{ from: drizzleState.accounts[0], gas: 6000000 }}
-          />
-          <strong>Reset: </strong>
-          <ContractForm
-            drizzle={drizzle}
-            contract="InBetween"
-            method="reset"
-            sendArgs={{ from: drizzleState.accounts[0], gas: 6000000 }}
-          />
-        </div>
+
+        <strong>Top up: </strong>
+        <ContractForm
+          drizzle={drizzle}
+          contract="InBetween"
+          method="topUp"
+          sendArgs={{ from: drizzleState.accounts[0], value: 5000, gas: 6000000 }}
+        />
+
+        <strong>Join game: </strong>
+        <ContractForm
+          drizzle={drizzle}
+          contract="InBetween"
+          method="joinGame"
+          sendArgs={{ from: drizzleState.accounts[0], gas: 6000000 }}
+        />
+
+        <strong>Bet: </strong>
+        <ContractForm
+          drizzle={drizzle}
+          contract="InBetween"
+          method="bet"
+          labels={['bet amount']}
+          sendArgs={{ from: drizzleState.accounts[0], gas: 6000000 }}
+        />
+
+        <strong>Next round: </strong>
+        <ContractForm
+          drizzle={drizzle}
+          contract="InBetween"
+          method="reset"
+          methodArgs={false}
+          sendArgs={{ from: drizzleState.accounts[0], gas: 6000000 }}
+        />
+
+        <strong>Result: </strong>
+        <ContractForm
+          drizzle={drizzle}
+          contract="InBetween"
+          method="reset"
+          methodArgs={true}
+          sendArgs={{ from: drizzleState.accounts[0], gas: 6000000 }}
+        />
       </div>
     </div>
   );
