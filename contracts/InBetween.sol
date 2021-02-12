@@ -4,21 +4,19 @@ pragma abicoder v2;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/payment/PullPayment.sol";
+import "@openzeppelin/contracts/math/Math.sol";
 
 import "./Queue.sol";
 import "./Cards.sol";
+import "./Cashier.sol";
 
-contract InBetween is Ownable, PullPayment {
+contract InBetween is Ownable, Cashier {
     using Cards for Cards.Data;
     using SafeMath for uint256;
 
     uint256 public ante;
     uint256 public pot;
-    struct Player {
-        Cards.Data cards;
-    }
-    mapping(address => Player) private players;
+    mapping(address => Cards.Data) private cards;
     Queue internal queue;
 
     constructor() {
@@ -26,14 +24,14 @@ contract InBetween is Ownable, PullPayment {
         queue = new Queue();
     }
 
-    function joinGame() external payable {
+    function joinGame() external {
         // TODO: check if player is already in game
-        require(msg.value >= ante, "sent amount less than ante");
+        require(balance(msg.sender) >= ante, "balance less than ante");
 
-        // TODO: refund excess ante
-        pot = pot.add(msg.value);
+        deduct(msg.sender, ante);
+        pot = pot.add(ante);
 
-        players[msg.sender].cards = players[msg.sender].cards.setOpeningCards(
+        cards[msg.sender] = cards[msg.sender].setOpeningCards(
             randomNumber(0),
             randomNumber(1)
         );
@@ -42,11 +40,11 @@ contract InBetween is Ownable, PullPayment {
     }
 
     function viewCards() external view returns (Cards.Data memory) {
-        return players[msg.sender].cards;
+        return cards[msg.sender];
     }
 
     function viewResult() external view returns (Cards.Result) {
-        return players[msg.sender].cards.result();
+        return cards[msg.sender].result();
     }
 
     function nextPlayer() external view returns (address) {
@@ -56,43 +54,39 @@ contract InBetween is Ownable, PullPayment {
 
     // ONLY FOR TESTING PURPOSES
     function reset() external {
-        delete players[msg.sender];
+        delete cards[msg.sender];
     }
 
-    function bet() external payable {
+    function bet(uint256 _betAmount) external {
         // TODO: implement queue time limit
         require(queue.head() == msg.sender, "player is not next in queue");
 
-        // if the final card equals any opening card, the player will need to pay double the bet
-        // hence, we require players to send double their bet as collateral which is returned upon a win
-        uint256 collateral = msg.value;
-        uint256 betAmount = collateral.div(2);
+        _betAmount = Math.min(_betAmount, pot);
         if (pot >= ante) {
-            require(betAmount >= ante, "bet must not be less than ante");
+            require(_betAmount >= ante, "bet must not be less than ante");
         }
-        require(betAmount <= pot, "bet must not be more than pot");
+        require(
+            balance(msg.sender) >= _betAmount.mul(2),
+            "balance less than 2x of bet amount"
+        );
 
         require(
-            players[msg.sender].cards.hasOpeningCards(),
+            cards[msg.sender].hasOpeningCards(),
             "player does not have opening cards"
         );
-        players[msg.sender].cards = players[msg.sender].cards.setFinalCard(
-            randomNumber(2)
-        );
+        cards[msg.sender] = cards[msg.sender].setFinalCard(randomNumber(2));
         queue.pop();
 
-        Cards.Result result = players[msg.sender].cards.result();
+        Cards.Result result = cards[msg.sender].result();
         if (result == Cards.Result.Inside) {
-            // player wins their collateral and the bet amount
-            _asyncTransfer(msg.sender, collateral.add(betAmount));
-            pot -= betAmount;
+            deposit(msg.sender, _betAmount);
+            pot = pot.sub(_betAmount);
         } else if (result == Cards.Result.Equal) {
-            // player loses their entire collateral
-            pot += collateral;
+            deduct(msg.sender, _betAmount.mul(2));
+            pot = pot.add(_betAmount.mul(2));
         } else if (result == Cards.Result.Outside) {
-            // player loses only the bet amount
-            _asyncTransfer(msg.sender, collateral.sub(betAmount));
-            pot += betAmount;
+            deduct(msg.sender, _betAmount);
+            pot = pot.add(_betAmount);
         } else {
             revert("unsupported card result");
         }
@@ -100,12 +94,6 @@ contract InBetween is Ownable, PullPayment {
         // TODO: check if game is over before adding player to queue
         // maybe end game if pot is too small?
         queue.push(msg.sender);
-    }
-
-    function withdraw() external {
-        // TODO: test this using balance.tracker
-        require(payments(msg.sender) > 0, "no funds to withdraw");
-        return withdrawPayments(msg.sender);
     }
 
     function randomNumber(uint256 cursor)
