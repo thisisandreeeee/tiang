@@ -41,30 +41,33 @@ describe('Cards', function () {
         await expectRevert(cardsInstance.setFinalCard(cards, 1), "opening cards not set");
     });
 
-    it("reverts when checking result without cards", async function () {
-        await expectRevert(cardsInstance.result(cards), "opening cards not set");
+    it("returns Unknown result without enough cards", async function () {
+        let result = await cardsInstance.result(cards);
+        expect(result.toNumber()).to.equal(0); // 0 is enum `Unknown`
+
         cards = await cardsInstance.setOpeningCards(cards, 1, 2);
-        await expectRevert(cardsInstance.result(cards), "final card not set");
+        result = await cardsInstance.result(cards);
+        expect(result.toNumber()).to.equal(0); // 0 is enum `Unknown`
     });
 
     it("returns Inside result correctly", async function () {
         cards = await cardsInstance.setOpeningCards(cards, 1, 10);
         cards = await cardsInstance.setFinalCard(cards, 5);
         let result = await cardsInstance.result(cards);
-        expect(result.toNumber()).to.equal(0); // 0 is enum `Inside`
+        expect(result.toNumber()).to.equal(1); // 1 is enum `Inside`
     });
 
     it("returns Outside result correctly", async function () {
         cards = await cardsInstance.setOpeningCards(cards, 1, 10);
         cards = await cardsInstance.setFinalCard(cards, 11);
         let result = await cardsInstance.result(cards);
-        expect(result.toNumber()).to.equal(1); // 1 is enum `Outside`
+        expect(result.toNumber()).to.equal(2); // 2 is enum `Outside`
     });
 
     it("returns Equal result correctly", async function () {
         cards = await cardsInstance.setOpeningCards(cards, 1, 10);
         cards = await cardsInstance.setFinalCard(cards, 10);
         let result = await cardsInstance.result(cards);
-        expect(result.toNumber()).to.equal(2); // 2 is enum `Equal`
+        expect(result.toNumber()).to.equal(3); // 3 is enum `Equal`
     });
 });

@@ -19,19 +19,14 @@ describe('InBetween', function () {
             await expectRevert(inBetween.joinGame({ from: p1, value: ante - 1 }), 'sent amount less than ante');
         });
 
-        it("reverts when player is already in game", async function () {
+        xit("reverts when player is already in game", async function () {
             await inBetween.joinGame({ from: p1, value: ante });
             await expectRevert(inBetween.joinGame({ from: p1, value: ante }), 'player is already in game');
         });
 
-        it("reverts if viewing stake or hand when not in game", async function () {
-            await expectRevert(inBetween.viewStake({ from: p1 }), "player not in game");
-            await expectRevert(inBetween.viewCards({ from: p1 }), "player not in game");
-        });
-
         it("should add ante to pot when player joins game", async function () {
             await inBetween.joinGame({ from: p1, value: ante });
-            let stake = await inBetween.viewStake({ from: p1 });
+            let stake = await inBetween.payments(p1);
             expect(stake.toNumber()).to.equal(ante);
             expect(await inBetween.pot()).to.be.bignumber.equal("100");
         });
