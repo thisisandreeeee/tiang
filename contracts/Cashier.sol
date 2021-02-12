@@ -20,7 +20,7 @@ contract Cashier {
         _address.sendValue(total);
     }
 
-    function balance(address _address) public view returns (uint256) {
+    function balanceOf(address _address) public view returns (uint256) {
         return _balances[_address];
     }
 

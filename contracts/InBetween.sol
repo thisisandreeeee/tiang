@@ -26,7 +26,7 @@ contract InBetween is Ownable, Cashier {
 
     function joinGame() external {
         // TODO: check if player is already in game
-        require(balance(msg.sender) >= ante, "balance less than ante");
+        require(balanceOf(msg.sender) >= ante, "balance less than ante");
 
         deduct(msg.sender, ante);
         pot = pot.add(ante);
@@ -66,7 +66,7 @@ contract InBetween is Ownable, Cashier {
             require(_betAmount >= ante, "bet must not be less than ante");
         }
         require(
-            balance(msg.sender) >= _betAmount.mul(2),
+            balanceOf(msg.sender) >= _betAmount.mul(2),
             "balance less than 2x of bet amount"
         );
 
