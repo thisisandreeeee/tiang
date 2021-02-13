@@ -10,14 +10,11 @@ export default ({ drizzle, drizzleState }) => {
     <div className="App">
       <div>
         <img src={logo} alt="drizzle-logo" />
-        <h1>Drizzle Examples</h1>
-        <p>
-          Examples of how to get started with Drizzle in various situations.
-        </p>
+        <h1>In Between</h1>
       </div>
 
       <div className="section">
-        <h2>Active Account</h2>
+        <h2>Ethereum wallet</h2>
         <AccountData
           drizzle={drizzle}
           drizzleState={drizzleState}
@@ -28,7 +25,7 @@ export default ({ drizzle, drizzleState }) => {
       </div>
 
       <div className="section">
-        <h2>InBetween</h2>
+        <h2>Game overview</h2>
         <ul>
           <li>
             <strong>Next player: </strong>
@@ -48,8 +45,14 @@ export default ({ drizzle, drizzleState }) => {
               method="pot"
             />
           </li>
+        </ul>
+      </div>
+
+      <div className="section">
+        <h2>Player information</h2>
+        <ul>
           <li>
-            <strong>Escrow: </strong>
+            <strong>Balance: </strong>
             <ContractData
               drizzle={drizzle}
               drizzleState={drizzleState}
@@ -77,16 +80,19 @@ export default ({ drizzle, drizzleState }) => {
             />
           </li>
         </ul>
+      </div>
 
-        <strong>Top up: </strong>
+      <div className="section">
+        <h2>Play game</h2>
+        <strong>Top up</strong>
         <ContractForm
           drizzle={drizzle}
           contract="InBetween"
           method="topUp"
-          sendArgs={{ from: drizzleState.accounts[0], value: 5000, gas: 6000000 }}
+          sendArgs={{ from: drizzleState.accounts[0], gas: 6000000, value: 5000 }}
         />
 
-        <strong>Join game: </strong>
+        <strong>Join game</strong>
         <ContractForm
           drizzle={drizzle}
           contract="InBetween"
@@ -94,7 +100,7 @@ export default ({ drizzle, drizzleState }) => {
           sendArgs={{ from: drizzleState.accounts[0], gas: 6000000 }}
         />
 
-        <strong>Bet: </strong>
+        <strong>Bet</strong>
         <ContractForm
           drizzle={drizzle}
           contract="InBetween"
@@ -103,16 +109,7 @@ export default ({ drizzle, drizzleState }) => {
           sendArgs={{ from: drizzleState.accounts[0], gas: 6000000 }}
         />
 
-        <strong>Next round: </strong>
-        <ContractForm
-          drizzle={drizzle}
-          contract="InBetween"
-          method="reset"
-          methodArgs={false}
-          sendArgs={{ from: drizzleState.accounts[0], gas: 6000000 }}
-        />
-
-        <strong>Result: </strong>
+        <strong>Reset</strong>
         <ContractForm
           drizzle={drizzle}
           contract="InBetween"
