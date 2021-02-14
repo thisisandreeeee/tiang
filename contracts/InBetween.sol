@@ -16,27 +16,26 @@ contract InBetween is Ownable, Cashier {
 
     uint256 public ante;
     uint256 public pot;
-    mapping(address => Cards.Data) private cards;
     Queue internal queue;
+    bool public gameOver;
+
+    mapping(address => Cards.Data) private cards;
 
     constructor() {
         ante = 100 wei;
-        queue = new Queue();
+        queue = new FifoQueue();
+        gameOver = false;
     }
 
     function joinGame() external {
+        require(!gameOver, "game is over");
         // TODO: check if player is already in game
         require(balanceOf(msg.sender) >= ante, "balance less than ante");
 
         deduct(msg.sender, ante);
         pot = pot.add(ante);
 
-        cards[msg.sender] = cards[msg.sender].setOpeningCards(
-            randomNumber(0),
-            randomNumber(1)
-        );
-
-        queue.push(msg.sender);
+        dealOpeningCards(msg.sender);
     }
 
     function viewCards() external view returns (Cards.Data memory) {
@@ -48,20 +47,18 @@ contract InBetween is Ownable, Cashier {
     }
 
     function nextPlayer() external view returns (address) {
-        if (queue.length() == 0) return address(0);
+        if (queue.length() == 0 || gameOver) return address(0);
         return queue.head();
     }
 
     // ONLY FOR TESTING PURPOSES
-    function reset(bool hard) external {
-        delete cards[msg.sender];
-        if (hard) {
-            withdraw(msg.sender);
-            pot = 0;
-        }
+    function reset() external {
+        withdraw(msg.sender);
+        pot = 0;
     }
 
     function bet(uint256 _betAmount) external {
+        require(!gameOver, "game is over");
         // TODO: implement queue time limit
         require(queue.head() == msg.sender, "player is not next in queue");
 
@@ -85,6 +82,7 @@ contract InBetween is Ownable, Cashier {
         if (result == Cards.Result.Inside) {
             deposit(msg.sender, _betAmount);
             pot = pot.sub(_betAmount);
+            if (pot == 0) gameOver = true;
         } else if (result == Cards.Result.Equal) {
             deduct(msg.sender, _betAmount.mul(2));
             pot = pot.add(_betAmount.mul(2));
@@ -94,12 +92,19 @@ contract InBetween is Ownable, Cashier {
         } else {
             revert("unsupported card result");
         }
+        delete cards[msg.sender];
 
-        // TODO: check if game is over before adding player to queue
-        // maybe end game if pot is too small?
+        if (!gameOver) {
+            dealOpeningCards(msg.sender);
+        }
+    }
 
-        // TODO: reset hand when rejoining game
-        queue.push(msg.sender);
+    function dealOpeningCards(address _address) internal {
+        cards[_address] = cards[_address].setOpeningCards(
+            randomNumber(0),
+            randomNumber(1)
+        );
+        queue.push(_address);
     }
 
     function randomNumber(uint256 cursor)

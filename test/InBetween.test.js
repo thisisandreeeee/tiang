@@ -69,15 +69,7 @@ describe('InBetween', function () {
             await inBetween.bet(ante, { from: p1 });
         });
 
-        it("should give final card after betting", async function () {
-            await inBetween.bet(ante, { from: p1 });
-            let cards = await inBetween.viewCards({ from: p1 });
-            expect(cards.first.initialised).to.be.true;
-            expect(cards.second.initialised).to.be.true;
-            expect(cards.third.initialised).to.be.true;
-        });
-
-        it("should win bet if final card is Inside", async function () {
+        it("should win bet if final card is Inside and revert when game over", async function () {
             await inBetween.setRandomNumbers(1, 10, 5);
             await inBetween.skipNextPlayer();
             await inBetween.skipNextPlayer();
@@ -86,9 +78,12 @@ describe('InBetween', function () {
             await inBetween.joinGame({ from: p3 });
             expect(await inBetween.pot()).to.be.bignumber.equal("300");
 
-            await inBetween.bet(ante, { from: p3 });
-            expect(await inBetween.pot()).to.be.bignumber.equal("200");
-            expect(await inBetween.balanceOf(p3)).to.be.bignumber.equal("1000");
+            await inBetween.bet(300, { from: p3 });
+            expect(await inBetween.gameOver()).to.be.true;
+            expect(await inBetween.pot()).to.be.bignumber.equal("0");
+            expect(await inBetween.balanceOf(p3)).to.be.bignumber.equal("1200");
+
+            await expectRevert(inBetween.joinGame({ from: p3 }), "game is over");
         });
 
         it("should lose bet if final card is Outside", async function () {
@@ -101,6 +96,7 @@ describe('InBetween', function () {
             expect(await inBetween.pot()).to.be.bignumber.equal("300");
 
             await inBetween.bet(ante, { from: p3 });
+            expect(await inBetween.gameOver()).to.be.false;
             expect(await inBetween.pot()).to.be.bignumber.equal("400");
             expect(await inBetween.balanceOf(p3)).to.be.bignumber.equal("800");
         });
@@ -115,6 +111,7 @@ describe('InBetween', function () {
             expect(await inBetween.pot()).to.be.bignumber.equal("300");
 
             await inBetween.bet(5 * ante, { from: p3 });
+            expect(await inBetween.gameOver()).to.be.false;
             expect(await inBetween.pot()).to.be.bignumber.equal("600");
             expect(await inBetween.balanceOf(p3)).to.be.bignumber.equal("600");
         });
@@ -129,6 +126,7 @@ describe('InBetween', function () {
             expect(await inBetween.pot()).to.be.bignumber.equal("300");
 
             await inBetween.bet(ante, { from: p3 });
+            expect(await inBetween.gameOver()).to.be.false;
             expect(await inBetween.pot()).to.be.bignumber.equal("500");
             expect(await inBetween.balanceOf(p3)).to.be.bignumber.equal("700");
         });
