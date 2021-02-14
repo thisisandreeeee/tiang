@@ -96,7 +96,7 @@ export default ({ drizzle, drizzleState }) => {
         <ContractForm
           drizzle={drizzle}
           contract="InBetween"
-          method="joinGame"
+          method="join"
           sendArgs={{ from: drizzleState.accounts[0], gas: 6000000 }}
         />
 

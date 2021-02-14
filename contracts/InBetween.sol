@@ -2,7 +2,6 @@
 pragma solidity 0.7.6;
 pragma abicoder v2;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/math/Math.sol";
 
@@ -10,7 +9,7 @@ import "./Queue.sol";
 import "./Cards.sol";
 import "./Cashier.sol";
 
-contract InBetween is Ownable, Cashier {
+contract InBetween is Cashier {
     using Cards for Cards.Data;
     using SafeMath for uint256;
 
@@ -27,7 +26,7 @@ contract InBetween is Ownable, Cashier {
         gameOver = false;
     }
 
-    function joinGame() external {
+    function join() external {
         require(!gameOver, "game is over");
         // TODO: check if player is already in game
         require(balanceOf(msg.sender) >= ante, "balance less than ante");
@@ -55,6 +54,7 @@ contract InBetween is Ownable, Cashier {
     function reset() external {
         withdraw(msg.sender);
         pot = 0;
+        gameOver = true;
     }
 
     function bet(uint256 _betAmount) external {

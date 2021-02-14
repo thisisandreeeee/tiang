@@ -9,7 +9,7 @@ describe('InBetween', function () {
     let inBetween;
     const ante = 100;
 
-    describe('joinGame', function () {
+    describe('join', function () {
         beforeEach(async function () {
             [owner, p1, p2] = accounts;
             inBetween = await InBetween.new({ from: owner });
@@ -17,21 +17,21 @@ describe('InBetween', function () {
 
         it("reverts when joining with insufficient funds", async function () {
             await inBetween.topUp({ from: p1, value: ante - 1 });
-            await expectRevert(inBetween.joinGame({ from: p1 }), 'balance less than ante');
+            await expectRevert(inBetween.join({ from: p1 }), 'balance less than ante');
         });
 
         it("should add ante to pot when player joins game", async function () {
             await inBetween.topUp({ from: p1, value: ante });
             expect(await inBetween.balanceOf(p1)).to.be.bignumber.equal("100");
 
-            await inBetween.joinGame({ from: p1 });
+            await inBetween.join({ from: p1 });
             expect(await inBetween.balanceOf(p1)).to.be.bignumber.equal("0");
             expect(await inBetween.pot()).to.be.bignumber.equal("100");
         });
 
         it("should give two cards to player when joining game", async function () {
             await inBetween.topUp({ from: p1, value: ante });
-            await inBetween.joinGame({ from: p1 });
+            await inBetween.join({ from: p1 });
             let cards = await inBetween.viewCards({ from: p1 });
             expect(cards.first.initialised).to.be.true;
             expect(cards.second.initialised).to.be.true;
@@ -40,11 +40,11 @@ describe('InBetween', function () {
 
         it("should add player to queue after receiving cards", async function () {
             await inBetween.topUp({ from: p1, value: ante });
-            await inBetween.joinGame({ from: p1 });
+            await inBetween.join({ from: p1 });
             expect(await inBetween.nextPlayer()).to.equal(p1);
 
             await inBetween.topUp({ from: p2, value: ante });
-            await inBetween.joinGame({ from: p2 });
+            await inBetween.join({ from: p2 });
             expect(await inBetween.nextPlayer()).to.equal(p1);
         });
     });
@@ -54,9 +54,9 @@ describe('InBetween', function () {
             [owner, p1, p2, p3] = accounts;
             inBetween = await InBetween.new({ from: owner });
             await inBetween.topUp({ from: p1, value: 3 * ante });
-            await inBetween.joinGame({ from: p1 });
+            await inBetween.join({ from: p1 });
             await inBetween.topUp({ from: p2, value: 3 * ante });
-            await inBetween.joinGame({ from: p2 });
+            await inBetween.join({ from: p2 });
             expect(await inBetween.pot()).to.be.bignumber.equal("200");
         });
 
@@ -75,7 +75,7 @@ describe('InBetween', function () {
             await inBetween.skipNextPlayer();
 
             await inBetween.topUp({ from: p3, value: 10 * ante });
-            await inBetween.joinGame({ from: p3 });
+            await inBetween.join({ from: p3 });
             expect(await inBetween.pot()).to.be.bignumber.equal("300");
 
             await inBetween.bet(300, { from: p3 });
@@ -83,7 +83,7 @@ describe('InBetween', function () {
             expect(await inBetween.pot()).to.be.bignumber.equal("0");
             expect(await inBetween.balanceOf(p3)).to.be.bignumber.equal("1200");
 
-            await expectRevert(inBetween.joinGame({ from: p3 }), "game is over");
+            await expectRevert(inBetween.join({ from: p3 }), "game is over");
         });
 
         it("should lose bet if final card is Outside", async function () {
@@ -92,7 +92,7 @@ describe('InBetween', function () {
             await inBetween.skipNextPlayer();
 
             await inBetween.topUp({ from: p3, value: 10 * ante });
-            await inBetween.joinGame({ from: p3 });
+            await inBetween.join({ from: p3 });
             expect(await inBetween.pot()).to.be.bignumber.equal("300");
 
             await inBetween.bet(ante, { from: p3 });
@@ -107,7 +107,7 @@ describe('InBetween', function () {
             await inBetween.skipNextPlayer();
 
             await inBetween.topUp({ from: p3, value: 10 * ante });
-            await inBetween.joinGame({ from: p3 });
+            await inBetween.join({ from: p3 });
             expect(await inBetween.pot()).to.be.bignumber.equal("300");
 
             await inBetween.bet(5 * ante, { from: p3 });
@@ -122,7 +122,7 @@ describe('InBetween', function () {
             await inBetween.skipNextPlayer();
 
             await inBetween.topUp({ from: p3, value: 10 * ante });
-            await inBetween.joinGame({ from: p3 });
+            await inBetween.join({ from: p3 });
             expect(await inBetween.pot()).to.be.bignumber.equal("300");
 
             await inBetween.bet(ante, { from: p3 });
