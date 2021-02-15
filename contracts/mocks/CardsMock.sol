@@ -21,24 +21,24 @@ contract CardsMock {
         return Cards.hasOpeningCards(_cards);
     }
 
-    function setOpeningCards(
+    function drawOpeningCards(
         Cards.Data memory _cards,
         uint8 value1,
         uint8 value2
     ) public pure returns (Cards.Data memory) {
-        return Cards.setOpeningCards(_cards, value1, value2);
+        return Cards.drawOpeningCards(_cards, value1, value2);
     }
 
     function hasFinalCard(Cards.Data memory _cards) public pure returns (bool) {
         return Cards.hasFinalCard(_cards);
     }
 
-    function setFinalCard(Cards.Data memory _cards, uint8 value)
+    function drawFinalCard(Cards.Data memory _cards, uint8 value)
         public
         pure
         returns (Cards.Data memory)
     {
-        return Cards.setFinalCard(_cards, value);
+        return Cards.drawFinalCard(_cards, value);
     }
 
     function result(Cards.Data memory _cards)

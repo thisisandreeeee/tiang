@@ -15,6 +15,7 @@ contract Cashier {
     }
 
     function withdraw(address payable _address) public {
+        // TODO: replace _address with msg.sender
         uint256 total = _balances[_address];
         _balances[_address] = 0;
         _address.sendValue(total);

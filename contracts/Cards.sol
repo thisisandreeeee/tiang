@@ -19,12 +19,12 @@ library Cards {
         return _cards.first.initialised && _cards.second.initialised;
     }
 
-    function setOpeningCards(
+    function drawOpeningCards(
         Data memory _cards,
         uint8 value1,
         uint8 value2
     ) internal pure returns (Data memory) {
-        require(!hasOpeningCards(_cards), "opening cards already set");
+        require(!hasOpeningCards(_cards), "opening cards already drawn");
         require(inRange(value1), "value1 not in range [0,12]");
         require(inRange(value2), "value2 not in range [0,12]");
         _cards.first = Card({value: value1, initialised: true});
@@ -36,14 +36,14 @@ library Cards {
         return _cards.third.initialised;
     }
 
-    function setFinalCard(Data memory _cards, uint8 value)
+    function drawFinalCard(Data memory _cards, uint8 value)
         internal
         pure
         returns (Data memory)
     {
-        require(hasOpeningCards(_cards), "opening cards not set");
+        require(hasOpeningCards(_cards), "opening cards not drawn");
         require(inRange(value), "value not in range [0,12]");
-        require(!hasFinalCard(_cards), "final card already set");
+        require(!hasFinalCard(_cards), "final card already drawn");
         _cards.third = Card({value: value, initialised: true});
         return _cards;
     }
