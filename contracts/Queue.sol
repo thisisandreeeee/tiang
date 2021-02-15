@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.7.6;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/SafeCast.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
@@ -16,7 +17,7 @@ interface Queue {
     function length() external view returns (uint256);
 }
 
-contract FifoQueue is Queue {
+contract FifoQueue is Queue, Ownable {
     using SafeMath for uint128;
     using SafeCast for uint256;
 
@@ -29,13 +30,13 @@ contract FifoQueue is Queue {
         _;
     }
 
-    function push(address data) public override {
+    function push(address data) public override onlyOwner {
         // TODO: check for duplicates before push
         queue[last] = data;
         last = last.add(1).toUint128();
     }
 
-    function pop() public override notEmpty returns (address) {
+    function pop() public override notEmpty onlyOwner returns (address) {
         address data = queue[first];
         delete queue[first];
         first = first.add(1).toUint128();
