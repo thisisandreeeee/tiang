@@ -6,12 +6,12 @@ module.exports = {
 
   contracts: {
     type: 'truffle', // Contract abstraction to use: 'truffle' for @truffle/contract or 'web3' for web3-eth-contract
-    defaultGas: 6e6, // Maximum gas for contract calls (when unspecified)
+    defaultGas: 6e7, // Maximum gas for contract calls (when unspecified)
     artifactsDir: 'app/src/contracts', // Directory where contract artifacts are stored
   },
 
   node: { // Options passed directly to Ganache client
-    gasLimit: 8e6, // Maximum gas per block
+    gasLimit: 8e7, // Maximum gas per block
     gasPrice: 20e9, // Sets the default gas price for transactions if not otherwise specified.
   },
 
