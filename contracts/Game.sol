@@ -48,11 +48,11 @@ contract Game is Initializable {
         external
         returns (uint256, bool)
     {
-        require(isNext(_player), "player is not next in queue");
         require(
             cards(_player).hasOpeningCards(),
             "player does not have opening cards"
         );
+        require(isNext(_player), "player is not next in queue");
         players[_player].cards = cards(_player).drawFinalCard(randomNumber(2));
         queue.pop();
 
