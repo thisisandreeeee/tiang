@@ -1,12 +1,12 @@
 const { accounts, contract } = require('@openzeppelin/test-environment');
-const { balance, ether } = require('@openzeppelin/test-helpers');
+const { balance, ether, expectRevert } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 
 const Cashier = contract.fromArtifact('CashierMock');
 
 describe('Cashier', function () {
     const [payer, payee1, payee2] = accounts;
-    const amount = ether('17');
+    const amount = ether('10');
 
     beforeEach(async function () {
         this.contract = await Cashier.new({ from: payer, value: amount });
@@ -23,6 +23,18 @@ describe('Cashier', function () {
             await this.contract.callDeposit(payee1, 300);
             expect(await this.contract.balanceOf(payee1)).to.be.bignumber.equal('500');
         });
+
+        it('can deduct balances on one account', async function () {
+            await this.contract.callDeposit(payee1, 200);
+            await this.contract.callDeduct(payee1, 50);
+            expect(await this.contract.balanceOf(payee1)).to.be.bignumber.equal('150');
+        });
+
+        it('reverts if deduct more than total', async function () {
+            await this.contract.callDeposit(payee1, 50);
+            await expectRevert(this.contract.callDeduct(payee1, 100), "cannot deduct more than total");
+            expect(await this.contract.balanceOf(payee1)).to.be.bignumber.equal("50");
+        })
 
         it('can add balances on multiple accounts', async function () {
             await this.contract.callDeposit(payee1, 200);
@@ -48,7 +60,7 @@ describe('Cashier', function () {
     describe('top up', function () {
         it('can top up funds', async function () {
             await this.contract.topUp({ from: payee1, value: amount });
-            expect(await this.contract.contractBalance.call()).to.be.bignumber.equal(ether('34'));
+            expect(await this.contract.contractBalance.call()).to.be.bignumber.equal(ether('20'));
             expect(await this.contract.balanceOf(payee1)).to.be.bignumber.equal(amount);
         });
     })
