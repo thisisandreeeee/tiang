@@ -39,12 +39,17 @@ describe('Dealer', function () {
             await dealer.topUp({ from: p1, value: ante - 1 });
             await expectRevert(dealer.join(0, { from: p1 }), "balance less than ante");
             expect(await balanceTracker.delta()).to.be.bignumber.equal("99");
-            expect(await game.pot()).to.be.bignumber.equal("0");
+            expect(await dealer.balanceOf(p1)).to.be.bignumber.equal("99");
         });
 
         it('reverts if joining with invalid gameId', async function () {
             await expectRevert(dealer.join(1, { from: p1 }), "invalid opcode");
-        })
+        });
+
+        it('reverts when betting without joining', async function () {
+            await dealer.topUp({ from: p1, value: ante });
+            await expectRevert(dealer.bet(0, ante, { from: p1 }), "player does not have opening cards");
+        });
 
         it('allows multiple users to join game', async function () {
             await dealer.topUp({ from: p1, value: ante });
@@ -58,7 +63,6 @@ describe('Dealer', function () {
             expect(await dealer.balanceOf(p1)).to.be.bignumber.equal("0");
             expect(await dealer.balanceOf(p2)).to.be.bignumber.equal("100");
             expect(await balanceTracker.delta()).to.be.bignumber.equal("0");
-            expect(await game.pot()).to.be.bignumber.equal("200");
         });
 
         it('does not deduct twice if joining game twice', async function () {
@@ -70,8 +74,7 @@ describe('Dealer', function () {
 
             await expectRevert(dealer.join(0, { from: p1 }), "already have opening cards");
             expect(await dealer.balanceOf(p1)).to.be.bignumber.equal("100");
-            expect(await game.pot()).to.be.bignumber.equal("100");
-        })
+        });
     });
 
     describe('bet', function () {
@@ -85,7 +88,6 @@ describe('Dealer', function () {
             await dealer.topUp({ from: p2, value: 3 * ante });
             await dealer.join(0, { from: p2 });
             expect(await balanceTracker.delta()).to.be.bignumber.equal("600");
-            expect(await game.pot()).to.be.bignumber.equal("200");
         });
 
         it('reverts if player tries to jump the queue', async function () {
