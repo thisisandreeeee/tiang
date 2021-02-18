@@ -75,7 +75,7 @@ contract InBetween is Cashier {
             cards[msg.sender].hasOpeningCards(),
             "player does not have opening cards"
         );
-        cards[msg.sender] = cards[msg.sender].setFinalCard(randomNumber(2));
+        cards[msg.sender] = cards[msg.sender].drawFinalCard(randomNumber(2));
         queue.pop();
 
         Cards.Result result = cards[msg.sender].result();
@@ -100,7 +100,7 @@ contract InBetween is Cashier {
     }
 
     function dealOpeningCards(address _address) internal {
-        cards[_address] = cards[_address].setOpeningCards(
+        cards[_address] = cards[_address].drawOpeningCards(
             randomNumber(0),
             randomNumber(1)
         );
