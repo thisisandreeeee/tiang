@@ -25,6 +25,7 @@ library Cards {
         uint8 value2
     ) internal pure returns (Data memory) {
         require(!hasOpeningCards(_cards), "already have opening cards");
+        require(!hasFinalCard(_cards), "already have final card");
         require(inRange(value1), "value1 not in range [0,12]");
         require(inRange(value2), "value2 not in range [0,12]");
         _cards.first = Card({value: value1, initialised: true});
