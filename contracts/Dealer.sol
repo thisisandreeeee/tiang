@@ -31,7 +31,6 @@ contract Dealer is Ownable, Cashier {
 
     function join(uint256 gameId) external {
         Game game = getGame(gameId);
-        require(!game.ended(), "game is over");
 
         uint256 ante = game.ante();
         require(balanceOf(msg.sender) >= ante, "balance less than ante");
@@ -42,7 +41,6 @@ contract Dealer is Ownable, Cashier {
 
     function bet(uint256 gameId, uint256 betValue) external {
         Game game = getGame(gameId);
-        require(!game.ended(), "game is over");
 
         uint256 ante = game.ante();
         uint256 pot = game.pot();

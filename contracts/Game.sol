@@ -33,6 +33,7 @@ contract Game is Initializable {
     }
 
     function dealOpeningCards(address _player) external {
+        require(!ended, "game is over");
         if (!inGame(_player)) {
             pot = pot.add(ante);
             players[_player].stake = players[_player].stake.add(ante);
@@ -48,6 +49,7 @@ contract Game is Initializable {
         external
         returns (uint256, bool)
     {
+        require(!ended, "game is over");
         require(
             cards(_player).hasOpeningCards(),
             "player does not have opening cards"
@@ -61,14 +63,17 @@ contract Game is Initializable {
         if (result == Cards.Result.Inside) {
             win = true;
             pot = pot.sub(_bet);
+            players[_player].stake = players[_player].stake.sub(_bet);
             if (pot == 0) ended = true;
         } else if (result == Cards.Result.Equal) {
             win = false;
             _bet = _bet.mul(2);
             pot = pot.add(_bet);
+            players[_player].stake = players[_player].stake.add(_bet);
         } else if (result == Cards.Result.Outside) {
             win = false;
             pot = pot.add(_bet);
+            players[_player].stake = players[_player].stake.add(_bet);
         } else {
             revert("unsupported card result");
         }
