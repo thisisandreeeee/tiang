@@ -1,5 +1,5 @@
-const InBetween = artifacts.require("InBetween");
+const Dealer = artifacts.require("Dealer");
 
 module.exports = function (deployer) {
-  deployer.deploy(InBetween);
+  deployer.deploy(Dealer);
 };
