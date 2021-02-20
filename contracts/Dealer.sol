@@ -19,6 +19,7 @@ contract Dealer is Ownable, Cashier {
     constructor() {
         Game game = new Game();
         gameContract = address(game);
+        newGame(100);
     }
 
     function newGame(uint256 ante) public onlyOwner returns (address) {
@@ -69,6 +70,15 @@ contract Dealer is Ownable, Cashier {
 
     function getGame(uint256 gameId) internal view returns (Game) {
         return Game(games[gameId]);
+    }
+
+    function listGames(uint256 num) public view returns (address[] memory) {
+        num = Math.min(num, games.length);
+        address[] memory lastNumGames = new address[](num);
+        for (uint256 i = games.length - num; i < num; i++) {
+            lastNumGames[i] = games[i];
+        }
+        return lastNumGames;
     }
 
     function cards(uint256 gameId, address player)
