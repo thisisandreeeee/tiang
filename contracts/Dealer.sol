@@ -23,10 +23,10 @@ contract Dealer is Ownable, Cashier {
     function newGame(uint256 ante) public onlyOwner returns (address) {
         uint256 gameId = games.length;
         bytes32 salt = bytes32(gameId);
-        address game = Clones.cloneDeterministic(gameContract, salt);
-        Game(game).init(gameId, ante);
-        games.push(game);
-        return game;
+        address gameAddress = Clones.cloneDeterministic(gameContract, salt);
+        Game(gameAddress).init(gameId, ante);
+        games.push(gameAddress);
+        return gameAddress;
     }
 
     function join(uint256 gameId) external {
