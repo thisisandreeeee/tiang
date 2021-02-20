@@ -84,7 +84,6 @@ contract Game is Initializable {
         } else {
             revert("unsupported card result");
         }
-        delete players[_player].cards;
         return (_bet, win);
     }
 
