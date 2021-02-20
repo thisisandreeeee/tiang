@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.7.6;
+pragma abicoder v2;
 
 import "@openzeppelin/contracts/proxy/Initializable.sol";
 import "@openzeppelin/contracts/utils/SafeCast.sol";
@@ -19,8 +20,8 @@ contract Game is Initializable {
     uint256 public pot;
 
     struct Player {
+        bool initialised;
         Cards.Data cards;
-        uint256 stake;
     }
     mapping(address => Player) private players;
     Queue internal queue;
@@ -34,9 +35,9 @@ contract Game is Initializable {
 
     function dealOpeningCards(address _player) external {
         require(!ended, "game is over");
-        if (!inGame(_player)) {
+        if (!players[_player].initialised) {
             pot = pot.add(ante);
-            players[_player].stake = players[_player].stake.add(ante);
+            players[_player].initialised = true;
         }
         players[_player].cards = cards(_player).drawOpeningCards(
             randomNumber(0),
@@ -63,17 +64,14 @@ contract Game is Initializable {
         if (result == Cards.Result.Inside) {
             win = true;
             pot = pot.sub(_bet);
-            players[_player].stake = players[_player].stake.sub(_bet);
             if (pot == 0) ended = true;
         } else if (result == Cards.Result.Equal) {
             win = false;
             _bet = _bet.mul(2);
             pot = pot.add(_bet);
-            players[_player].stake = players[_player].stake.add(_bet);
         } else if (result == Cards.Result.Outside) {
             win = false;
             pot = pot.add(_bet);
-            players[_player].stake = players[_player].stake.add(_bet);
         } else {
             revert("unsupported card result");
         }
@@ -81,16 +79,12 @@ contract Game is Initializable {
         return (_bet, win);
     }
 
-    function inGame(address _player) internal view returns (bool) {
-        return players[_player].stake > 0;
-    }
-
     function isNext(address _player) internal view returns (bool) {
         if (queue.length() == 0 || ended) return false;
         return queue.head() == _player;
     }
 
-    function cards(address _player) internal view returns (Cards.Data memory) {
+    function cards(address _player) public view returns (Cards.Data memory) {
         return players[_player].cards;
     }
 
