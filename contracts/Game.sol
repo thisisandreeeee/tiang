@@ -79,7 +79,7 @@ contract Game is Initializable {
         return (_bet, win);
     }
 
-    function isNext(address _player) internal view returns (bool) {
+    function isNext(address _player) public view returns (bool) {
         if (queue.length() == 0 || ended) return false;
         return queue.head() == _player;
     }
