@@ -13,9 +13,14 @@ describe('Game', function () {
         [owner, p1, p2, p3] = accounts;
         game = await Game.new({ from: owner });
         await game.init(0, ante);
+        await game.sitDown(p1);
     });
 
     describe('deal', function () {
+        it('reverts if dealing without sitting down', async function () {
+            await expectRevert(game.dealOpeningCards(p3), "player is not in game");
+        });
+
         it('can deal opening cards correctly once', async function () {
             await game.dealOpeningCards(p1);
             expect(await game.pot()).to.be.bignumber.equal(ante.toString());
@@ -44,7 +49,8 @@ describe('Game', function () {
 
         it('can deal for multiple players', async function () {
             await game.dealOpeningCards(p1);
-            await game.dealOpeningCards(p2, { from: owner });
+            await game.sitDown(p2);
+            await game.dealOpeningCards(p2);
 
             expect(await game.pot()).to.be.bignumber.equal((2 * ante).toString());
             expect(await game.isNext(p1)).to.be.true;

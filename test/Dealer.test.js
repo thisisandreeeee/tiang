@@ -47,7 +47,11 @@ describe('Dealer', function () {
         });
 
         it('reverts when betting without joining', async function () {
-            await dealer.topUp({ from: p1, value: ante });
+            await dealer.topUp({ from: p1, value: 10 * ante });
+            await expectRevert(dealer.bet(0, ante, { from: p1 }), "player is not in game");
+
+            await dealer.join(0, { from: p1 });
+            await dealer.bet(0, ante, { from: p1 });
             await expectRevert(dealer.bet(0, ante, { from: p1 }), "player does not have opening cards");
         });
 
@@ -72,8 +76,17 @@ describe('Dealer', function () {
             await dealer.join(0, { from: p1 });
             expect(await dealer.balanceOf(p1)).to.be.bignumber.equal("100");
 
-            await expectRevert(dealer.join(0, { from: p1 }), "already have opening cards");
+            await expectRevert(dealer.join(0, { from: p1 }), "player is already in game");
             expect(await dealer.balanceOf(p1)).to.be.bignumber.equal("100");
+        });
+
+        it('allows rejoin only if players have a full hand', async function () {
+            await dealer.topUp({ from: p1, value: 10 * ante });
+            await dealer.join(0, { from: p1 });
+
+            await expectRevert(dealer.rejoin(0, { from: p1 }), "already have opening cards");
+            await dealer.bet(0, ante, { from: p1 });
+            await dealer.rejoin(0, { from: p1 });
         });
     });
 
@@ -110,6 +123,21 @@ describe('Dealer', function () {
             expect(await dealer.balanceOf(p3)).to.be.bignumber.equal("1200");
 
             await expectRevert(dealer.join(0, { from: p3 }), "game is over");
+        });
+
+        it('can only win the remaining if pot is less than ante', async function () {
+            await game.setRandomNumbers(1, 10, 5);
+            await game.skipNextPlayer();
+            await game.skipNextPlayer();
+
+            await dealer.topUp({ from: p3, value: 10 * ante });
+            await dealer.join(0, { from: p3 });
+            await dealer.bet(0, 290, { from: p3 });
+            expect(await dealer.balanceOf(p3)).to.be.bignumber.equal("1190");
+
+            await dealer.rejoin(0, { from: p3 });
+            await dealer.bet(0, 100, { from: p3 });
+            expect(await dealer.balanceOf(p3)).to.be.bignumber.equal("1200");
         });
 
         it('loses bet if final card is Outside', async function () {
