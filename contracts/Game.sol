@@ -20,7 +20,7 @@ contract Game is Initializable {
     uint256 public pot;
 
     struct Player {
-        bool initialised;
+        bool inGame;
         Cards.Data cards;
     }
     mapping(address => Player) private players;
@@ -33,11 +33,19 @@ contract Game is Initializable {
         queue = new FifoQueue();
     }
 
+    function sitDown(address _player) external {
+        require(!ended, "game is over");
+        require(!players[_player].inGame, "player is already in game");
+
+        pot = pot.add(ante);
+        players[_player].inGame = true;
+    }
+
     function dealOpeningCards(address _player) external {
         require(!ended, "game is over");
-        if (!players[_player].initialised) {
-            pot = pot.add(ante);
-            players[_player].initialised = true;
+        require(inGame(_player), "player is not in game");
+        if (cards(_player).hasOpeningCards() && cards(_player).hasFinalCard()) {
+            delete players[_player].cards;
         }
         players[_player].cards = cards(_player).drawOpeningCards(
             randomNumber(0),
@@ -51,6 +59,7 @@ contract Game is Initializable {
         returns (uint256, bool)
     {
         require(!ended, "game is over");
+        require(inGame(_player), "player is not in game");
         require(
             cards(_player).hasOpeningCards(),
             "player does not have opening cards"
@@ -80,12 +89,22 @@ contract Game is Initializable {
     }
 
     function isNext(address _player) public view returns (bool) {
-        if (queue.length() == 0 || ended) return false;
-        return queue.head() == _player;
+        address next = nextPlayer();
+        if (next == address(0)) return false;
+        return next == _player;
+    }
+
+    function nextPlayer() public view returns (address) {
+        if (queue.length() == 0 || ended) return address(0);
+        return queue.head();
     }
 
     function cards(address _player) public view returns (Cards.Data memory) {
         return players[_player].cards;
+    }
+
+    function inGame(address _player) public view returns (bool) {
+        return players[_player].inGame;
     }
 
     function randomNumber(uint256 cursor)
