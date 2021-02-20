@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.7.6;
+pragma abicoder v2;
 
 import "@openzeppelin/contracts/proxy/Clones.sol";
 import "@openzeppelin/contracts/math/Math.sol";
@@ -36,7 +37,12 @@ contract Dealer is Ownable, Cashier {
         require(balanceOf(msg.sender) >= ante, "balance less than ante");
 
         deduct(msg.sender, ante);
+        game.sitDown(msg.sender);
         game.dealOpeningCards(msg.sender);
+    }
+
+    function rejoin(uint256 gameId) external {
+        getGame(gameId).dealOpeningCards(msg.sender);
     }
 
     function bet(uint256 gameId, uint256 betValue) external {
@@ -59,11 +65,21 @@ contract Dealer is Ownable, Cashier {
         } else if (!win && payout > 0) {
             deduct(msg.sender, payout);
         }
-
-        if (!game.ended()) game.dealOpeningCards(msg.sender);
     }
 
     function getGame(uint256 gameId) internal view returns (Game) {
         return Game(games[gameId]);
+    }
+
+    function cards(uint256 gameId, address player)
+        external
+        view
+        returns (Cards.Data memory)
+    {
+        return getGame(gameId).cards(player);
+    }
+
+    function nextPlayer(uint256 gameId) external view returns (address) {
+        return getGame(gameId).nextPlayer();
     }
 }
